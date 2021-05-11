@@ -1,4 +1,7 @@
 import { Controller as MuseumController, Repository as MuseumRepository	} from './museums/index.ts';
+import { createServer } from './web/index.ts'
+
+createServer({configuration:{port: 8080}})
 
 const museumRepository = new MuseumRepository();
 
