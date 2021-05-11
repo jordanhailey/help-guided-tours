@@ -1,4 +1,4 @@
-import { serve } from "../deps.ts";
+import { Application } from "../deps.ts";
 import { MuseumController } from "../museums/index.ts"
 
 interface CreateServerDependencies {
@@ -8,23 +8,14 @@ interface CreateServerDependencies {
 	museum: MuseumController
 }
 
-export async function createServer({ configuration: { port }, museum }: CreateServerDependencies) {
-	const server = serve({port})
-	console.log(`Server running at https://localhost:${port}`);
-	for await (let req of server) {
-		if (req.url === "/api/museums" && req.method === "GET") {
-			req.respond({
-				body: JSON.stringify({
-					museums: await museum.getAll()
-				})+"\n",
-				status: 200
-			})
-			continue;
-		}
-
-		req.respond({
-			body: 'museums api\n',
-			status: 200
-		})
-	}
-}
+export async function createServer({ 
+			configuration: { port },
+			museum 
+		}: CreateServerDependencies
+	) {
+		const app = new Application();
+		app.use((ctx) => {
+			ctx.response.body = "Hello World!"
+		});
+		await app.listen({ port });
+} 
