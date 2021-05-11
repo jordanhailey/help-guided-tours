@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std/http/server.ts";
+import { serve } from "../deps.ts";
 import { MuseumController } from "../museums/index.ts"
 
 interface CreateServerDependencies {
