@@ -14,6 +14,14 @@ export async function createServer({
 		}: CreateServerDependencies
 	) {
 		const app = new Application();
+
+		app.addEventListener("listen", e => {
+			console.log(`Server has started, listening at ${e.hostname || 'localhost'}:${e.port}\n`)
+		})
+		app.addEventListener("error", e => {
+			console.log(`An error has occured: ${e.message}\n`)
+		})
+
 		app.use((ctx) => {
 			ctx.response.body = "Hello World!"
 		});
