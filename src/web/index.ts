@@ -1,4 +1,4 @@
-import { Application } from "../deps.ts";
+import { Application, Router } from "../deps.ts";
 import { MuseumController } from "../museums/index.ts"
 
 interface CreateServerDependencies {
@@ -14,6 +14,7 @@ export async function createServer({
 		}: CreateServerDependencies
 	) {
 		const app = new Application();
+		const apiRouter = new Router({ prefix: "/api"});
 
 		app.addEventListener("listen", e => {
 			console.log(`Server has started, listening at ${e.hostname || 'localhost'}:${e.port}\n`)
@@ -22,6 +23,14 @@ export async function createServer({
 			console.log(`An error has occured: ${e.message}\n`)
 		})
 
+		apiRouter.get("/museums", async (ctx)=>{
+			ctx.response.body = {
+				museums: await museum.getAll()
+			}
+		})
+
+		app.use(apiRouter.routes());
+		app.use(apiRouter.allowedMethods());
 		app.use((ctx) => {
 			ctx.response.body = "Hello World!"
 		});
