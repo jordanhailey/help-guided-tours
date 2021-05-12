@@ -1,7 +1,9 @@
 import {
   generateSalt,
   hashWithSalt,
+  LoginPayload,
   RegisterPayload,
+  User,
   UserController,
   UserRepository,
   userToUserDto,
@@ -35,5 +37,21 @@ export class Controller implements UserController {
       await this.getHashedUser(username, password),
     );
     return userToUserDto(createdUser);
+  }
+  public async login(payload: LoginPayload) {
+    try {
+      const user = await this.userRepository.getByUsername(payload.username);
+      await this.comparePassword(payload.password, user); // This method throws an Error if not matching, thus exiting this code block.
+      return { user: userToUserDto(user) };
+    } catch (error) {
+      throw new Error("Username and password combination is not correct");
+    }
+  }
+  private async comparePassword(password: string, user: User) {
+    const hashedPassword = hashWithSalt(password, user.salt);
+    if (hashedPassword === user.hash) {
+      return Promise.resolve(true);
+    }
+    Promise.reject(false);
   }
 }

@@ -58,6 +58,18 @@ export async function createServer({
     };
   });
 
+  apiRouter.post("/login", async (ctx) => {
+    const { username, password } = await ctx.request.body().value;
+    try {
+      const { user: loginUser } = await user.login({ username, password });
+      ctx.response.status = 201;
+      ctx.response.body = { user: loginUser };
+    } catch (error) {
+      ctx.response.status = 400;
+      ctx.response.body = { message: `ERROR: ${error}` };
+    }
+  });
+
   apiRouter.post("/users/register", async (ctx) => {
     const { username, password } = await ctx.request.body({ type: "json" })
       .value;
@@ -71,7 +83,7 @@ export async function createServer({
       ctx.response.body = { user: createdUser };
     } catch (error) {
       ctx.response.status = 400;
-      ctx.response.body = { error: error };
+      ctx.response.body = { message: `ERROR ${error}` };
     }
   });
 
