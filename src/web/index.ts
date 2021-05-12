@@ -15,7 +15,16 @@ export async function createServer({
   museum,
   user,
 }: CreateServerDependencies) {
-  const app = new Application();
+  const app = new Application(); 
+  app.use(async (ctx,next) => {
+    const start = Date.now();
+    await next();
+    const ms = Date.now() - start;
+    ctx.response.headers.set(
+      "X-Response-Time",
+      `${ms}ms`
+    );
+  });
   const apiRouter = new Router({ prefix: "/api" });
 
   app.addEventListener("listen", (e) => {

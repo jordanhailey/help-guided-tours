@@ -16,4 +16,12 @@ code by writing modules that have a single responsibility and interact through a
 but also activities, restuarants, and hotels. 
 - The title I've chose for this app is Help-guided Tours (a weak spin on Self-guided, I know).
 
+## Help-Guided Tours
+### Adding Basic logging, Auth, and Connecting a Database
+- Adding Middleware to incorperate authentication, and data persistence.
+- Middleware is always processed as a stack, with each function controlling the flow of the response. In Oak, like Express, middleware is attached via the `use`method.
 
+#### Logging
+- By creating an async middleware function to log the response time length, the author teaches how Oak handles all middleware.
+	1. First, by attaching a function to `app.use()` we gain access to read and modify the request object, and also can impact the response.
+	1. By defining an async function and attaching it to the `Application` object immediately after invoking it with `new Application()`, we can execute some code before any of the other middleware functions down the thread, and by using `await next()` we can execute further code after all middlewares have executed.
