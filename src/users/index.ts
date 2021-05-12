@@ -10,3 +10,6 @@ export type {
 export { userToUserDto } from "./adapter.ts";
 
 export { generateSalt, hashWithSalt } from "./util.ts";
+
+export { Controller } from "./controller.ts";
+export { Repository } from "./repository.ts";
