@@ -1,16 +1,19 @@
 import { Application, Router } from "../deps.ts";
 import { MuseumController } from "../museums/index.ts";
+import { RegisterPayload, UserController } from "../users/index.ts";
 
 interface CreateServerDependencies {
   configuration: {
     port: number;
   };
   museum: MuseumController;
+  user: UserController;
 }
 
 export async function createServer({
   configuration: { port },
   museum,
+  user,
 }: CreateServerDependencies) {
   const app = new Application();
   const apiRouter = new Router({ prefix: "/api" });
@@ -29,6 +32,23 @@ export async function createServer({
     ctx.response.body = {
       museums: await museum.getAll(),
     };
+  });
+
+  apiRouter.post("/users/register", async (ctx) => {
+    const { username, password } = await ctx.request.body({ type: "json" })
+      .value;
+    if (!username || !password) {
+      ctx.response.status = 400;
+      return;
+    }
+    try {
+      const createdUser = await user.register({ username, password });
+      ctx.response.status = 201;
+      ctx.response.body = { user: createdUser };
+    } catch (error) {
+      ctx.response.status = 400;
+      ctx.response.body = { error: error};
+    }
   });
 
   app.use(apiRouter.routes());
