@@ -1,6 +1,6 @@
-import { Application, Router } from "../deps.ts";
+import { Application, Router, RouterMiddleware } from "../deps.ts";
 import { MuseumController } from "../museums/index.ts";
-import { RegisterPayload, UserController } from "../users/index.ts";
+import { UserController } from "../users/index.ts";
 
 interface CreateServerDependencies {
   configuration: {
@@ -15,16 +15,26 @@ export async function createServer({
   museum,
   user,
 }: CreateServerDependencies) {
-  const app = new Application(); 
-  app.use(async (ctx,next) => {
+  const app = new Application();
+
+  // Logging
+  app.use(async (ctx, next) => {
+    await next();
+    const rt = ctx.response.headers.get("X-Response-Time");
+    const { method, url } = ctx.request;
+    console.log(`${method} ${url} - ${rt}`);
+  });
+
+  app.use(async (ctx, next) => {
     const start = Date.now();
     await next();
     const ms = Date.now() - start;
     ctx.response.headers.set(
       "X-Response-Time",
-      `${ms}ms`
+      `${ms}ms`,
     );
   });
+
   const apiRouter = new Router({ prefix: "/api" });
 
   app.addEventListener("listen", (e) => {
@@ -37,7 +47,12 @@ export async function createServer({
     console.log(`An error has occured: ${e.message}\n`);
   });
 
-  apiRouter.get("/museums", async (ctx) => {
+  const addTestHeaderMiddleware: RouterMiddleware = async (ctx, next) => {
+    ctx.response.headers.set("X-Test", "true");
+    await next();
+  };
+
+  apiRouter.get("/museums", addTestHeaderMiddleware, async (ctx) => {
     ctx.response.body = {
       museums: await museum.getAll(),
     };
@@ -56,7 +71,7 @@ export async function createServer({
       ctx.response.body = { user: createdUser };
     } catch (error) {
       ctx.response.status = 400;
-      ctx.response.body = { error: error};
+      ctx.response.body = { error: error };
     }
   });
 

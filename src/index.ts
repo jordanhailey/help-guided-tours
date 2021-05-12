@@ -21,5 +21,9 @@ museumRepository.storage.set("123", {
   location: { lat: "12", lng: "34" },
 });
 
-createServer({ configuration: { port: 8080 }, museum: museumController, user: userController });
+createServer({
+  configuration: { port: 8080 },
+  museum: museumController,
+  user: userController,
+});
 //console.log(await museumController.getAll());
