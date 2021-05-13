@@ -15,7 +15,7 @@ export type LoginPayload = { username: string; password: string };
 
 export interface UserController {
   register: (payload: RegisterPayload) => Promise<UserDto>;
-  login: (payload: LoginPayload) => Promise<{ user: UserDto }>;
+  login: (payload: LoginPayload) => Promise<{ user: UserDto, token: string }>;
 }
 
 export interface UserRepository {

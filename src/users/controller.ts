@@ -9,14 +9,19 @@ import {
   userToUserDto,
 } from "./index.ts";
 
+import { AuthRepository } from "../deps.ts";
+
 interface ControllerDependencies {
   userRepository: UserRepository;
+  authRepository: AuthRepository;
 }
 
 export class Controller implements UserController {
   userRepository: UserRepository;
-  constructor({ userRepository }: ControllerDependencies) {
+  authRepository: AuthRepository;
+  constructor({ userRepository, authRepository }: ControllerDependencies) {
     this.userRepository = userRepository;
+    this.authRepository = authRepository;
   }
   private async getHashedUser(username: string, password: string) {
     const salt = generateSalt();
@@ -41,10 +46,11 @@ export class Controller implements UserController {
   public async login(payload: LoginPayload) {
     try {
       const user = await this.userRepository.getByUsername(payload.username);
-      await this.comparePassword(payload.password, user); // This method throws an Error if not matching, thus exiting this code block.
-      return { user: userToUserDto(user) };
+      await this.comparePassword(payload.password, user); // This method throws an Error if not matching, thus exiting this code block
+      const token = await this.authRepository.generateToken(user.username)
+      return { user: userToUserDto(user), token };
     } catch (error) {
-      throw new Error("Username and password combination is not correct");
+      throw new Error("Username and password combination is not correct. See error message: " + error);
     }
   }
   private async comparePassword(password: string, user: User) {

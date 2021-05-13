@@ -7,11 +7,19 @@ import {
   Repository as UserRepository,
 } from "./users/index.ts";
 import { createServer } from "./web/index.ts";
+import { AuthRepository } from "./deps.ts";
 
 const museumRepository = new MuseumRepository();
 const museumController = new MuseumController({ museumRepository });
 const userRepository = new UserRepository();
-const userController = new UserController({ userRepository });
+const authRepository = new AuthRepository({
+  configuration: {
+    algorithm: "HS512",
+    key: "some-key",
+    tokenExpirationInSeconds: 120
+  }
+});
+const userController = new UserController({ userRepository, authRepository });
 
 // TODO Remove this call to set mock data once data persistence is established
 museumRepository.storage.set("123", {

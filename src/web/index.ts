@@ -61,9 +61,9 @@ export async function createServer({
   apiRouter.post("/login", async (ctx) => {
     const { username, password } = await ctx.request.body().value;
     try {
-      const { user: loginUser } = await user.login({ username, password });
+      const { user: loginUser, token } = await user.login({ username, password });
       ctx.response.status = 201;
-      ctx.response.body = { user: loginUser };
+      ctx.response.body = { user: loginUser, token };
     } catch (error) {
       ctx.response.status = 400;
       ctx.response.body = { message: `ERROR: ${error}` };
