@@ -9,7 +9,7 @@ import {
   userToUserDto,
 } from "./index.ts";
 
-import { AuthRepository } from "../deps.ts";
+import { AuthRepository } from "../jwt-auth/index.ts";
 
 interface ControllerDependencies {
   userRepository: UserRepository;
@@ -47,10 +47,10 @@ export class Controller implements UserController {
     try {
       const user = await this.userRepository.getByUsername(payload.username);
       await this.comparePassword(payload.password, user); // This method throws an Error if not matching, thus exiting this code block
-      const token = await this.authRepository.generateToken(user.username)
+      const token = await this.authRepository.generateToken(user.username);
       return { user: userToUserDto(user), token };
     } catch (error) {
-      throw new Error("Username and password combination is not correct. See error message: " + error);
+      throw new Error(`Login Unsuccessful <- ${error}`);
     }
   }
   private async comparePassword(password: string, user: User) {

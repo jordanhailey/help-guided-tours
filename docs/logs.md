@@ -48,3 +48,16 @@
     response can be processed.
 
 #### Logging
+
+#### JWT Auth
+
+- I had to veer from the guided path emplementing JWT Auth. The tools the author
+  uses require `Oak@6.3.1`, and I was using `Oak@7.4.0`. The RouterMiddleware
+  interface had changed and even when trying to work around it, the plug in tool
+  didn't work as expected. So I took inspiration from the author's mudule and
+  wrote my own.
+  - I settled on using `djwt@v2.2`, and so I needed to change a few interfaces
+    and even the processes executed on the `getToken` and `generateToken`
+    method.
+  - Lastly, I had to write my own RouterMiddleware function to reject
+    unauthenitcated requests.

@@ -1,17 +1,23 @@
 import { Application, Router, RouterMiddleware } from "../deps.ts";
 import { MuseumController } from "../museums/index.ts";
 import { UserController } from "../users/index.ts";
+import {
+  Algorithm,
+  AuthRepository,
+  Configuration as AuthConfiguration,
+} from "../jwt-auth/index.ts";
 
 interface CreateServerDependencies {
   configuration: {
     port: number;
+    authorization: AuthRepository;
   };
   museum: MuseumController;
   user: UserController;
 }
 
 export async function createServer({
-  configuration: { port },
+  configuration: { port, authorization },
   museum,
   user,
 }: CreateServerDependencies) {
@@ -47,12 +53,20 @@ export async function createServer({
     console.log(`An error has occured: ${e.message}\n`);
   });
 
-  const addTestHeaderMiddleware: RouterMiddleware = async (ctx, next) => {
-    ctx.response.headers.set("X-Test", "true");
-    await next();
+  const authenticated: RouterMiddleware = async (ctx, next) => {
+    try {
+      const userId = ctx.request.headers.get("authorization");
+      if (!userId) throw new Error("Not authorized");
+      const authKey = userId.split(" ")[1];
+      const isAuthorized = await authorization.getToken(authKey);
+      next();
+    } catch (error) {
+      ctx.response.status = 401;
+      ctx.response.body = { message: `${error}` };
+    }
   };
 
-  apiRouter.get("/museums", addTestHeaderMiddleware, async (ctx) => {
+  apiRouter.get("/museums", authenticated, async (ctx) => {
     ctx.response.body = {
       museums: await museum.getAll(),
     };
@@ -61,12 +75,15 @@ export async function createServer({
   apiRouter.post("/login", async (ctx) => {
     const { username, password } = await ctx.request.body().value;
     try {
-      const { user: loginUser, token } = await user.login({ username, password });
+      const { user: loginUser, token } = await user.login({
+        username,
+        password,
+      });
       ctx.response.status = 201;
       ctx.response.body = { user: loginUser, token };
     } catch (error) {
       ctx.response.status = 400;
-      ctx.response.body = { message: `ERROR: ${error}` };
+      ctx.response.body = { message: `${error}` };
     }
   });
 

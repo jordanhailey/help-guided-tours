@@ -6,18 +6,22 @@ import {
   Controller as UserController,
   Repository as UserRepository,
 } from "./users/index.ts";
+import {
+  Configuration as AuthConfiguration,
+  Repository as AuthRepository,
+} from "./jwt-auth/index.ts";
 import { createServer } from "./web/index.ts";
-import { AuthRepository } from "./deps.ts";
 
 const museumRepository = new MuseumRepository();
 const museumController = new MuseumController({ museumRepository });
 const userRepository = new UserRepository();
+const authConfiguration: AuthConfiguration = {
+  alg: "HS512",
+  key: "some-key",
+  exp: 120,
+};
 const authRepository = new AuthRepository({
-  configuration: {
-    algorithm: "HS512",
-    key: "some-key",
-    tokenExpirationInSeconds: 120
-  }
+  configuration: authConfiguration,
 });
 const userController = new UserController({ userRepository, authRepository });
 
@@ -30,8 +34,10 @@ museumRepository.storage.set("123", {
 });
 
 createServer({
-  configuration: { port: 8080 },
+  configuration: {
+    port: 8080,
+    authorization: authRepository,
+  },
   museum: museumController,
   user: userController,
 });
-//console.log(await museumController.getAll());
